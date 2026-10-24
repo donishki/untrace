@@ -28,7 +28,7 @@
 
   <div class="side">
     <p class="cap">
-      After <span class="status ok">clean</span>
+      After <span class:ok={!result.fallback} class:err={result.fallback} class="status">{result.fallback ? "Not cleaned" : "clean"}</span>
     </p>
     <figure class="preview">
       <img src={result.url} alt="Result, after cleaning" />
@@ -60,11 +60,13 @@
       </p>
     {/if}
 
+    {#if !result.fallback}
     <ul class="removed">
       {#each removed as item}
         <li><span class="status ok">{item}</span></li>
       {/each}
     </ul>
+    {/if}
   </div>
 </div>
 

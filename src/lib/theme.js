@@ -1,62 +1,43 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
+import { THEMES, bootstrapTheme } from './theme-catalog.js';
 
-const STORAGE_KEY = "untrace-theme";
-
-/**
- * The design system is dark by default and opts into light with
- * data-theme="light" on <html>. A saved choice always wins; otherwise the
- * operating system decides, falling back to dark.
- */
-function preferredTheme() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "light" || saved === "dark") return saved;
-  } catch {
-    /* storage can be blocked — fall through to the media query */
-  }
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : "dark";
-}
-
-function apply(theme) {
-  if (theme === "light") {
-    document.documentElement.setAttribute("data-theme", "light");
-  } else {
-    document.documentElement.removeAttribute("data-theme");
-  }
-}
+export { THEMES };
+const STORAGE_KEY = 'untrace-theme'; // Keep existing portable preferences.
+const valid = choice => choice === 'system' || THEMES.some(item => item.id === choice);
 
 function createTheme() {
-  const { subscribe, set } = writable("dark");
-
+  const { subscribe, set } = writable('system');
+  let current = 'system';
+  let media;
+  function apply(choice) {
+    current = valid(choice) ? choice : 'system';
+    const resolved = current === 'system'
+      ? ((media || matchMedia('(prefers-color-scheme: light)')).matches ? 'light' : 'dark')
+      : current;
+    document.documentElement.setAttribute('data-theme', resolved);
+    set(current);
+  }
+  function select(choice) {
+    apply(choice);
+    try { localStorage.setItem(STORAGE_KEY, current); } catch { /* Keep session choice. */ }
+  }
   return {
     subscribe,
     init() {
-      const theme = preferredTheme();
-      apply(theme);
-      set(theme);
+      media = matchMedia('(prefers-color-scheme: light)');
+      apply(bootstrapTheme(THEMES));
+      const onSystemChange = () => { if (current === 'system') apply('system'); };
+      media.addEventListener('change', onSystemChange);
+      return () => media.removeEventListener('change', onSystemChange);
     },
-    toggle() {
-      const next =
-        document.documentElement.getAttribute("data-theme") === "light"
-          ? "dark"
-          : "light";
-      apply(next);
-      set(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        /* a blocked store just means the choice is not remembered */
-      }
-    },
+    select,
+    // Retained for the unused upstream toggle component.
+    toggle() { select(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); },
   };
 }
-
 export const theme = createTheme();
 
-/** Duration helper so Svelte transitions honour prefers-reduced-motion. */
 export function motionSafe(ms) {
-  if (typeof window === "undefined") return ms;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms;
+  if (typeof window === 'undefined') return ms;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms;
 }

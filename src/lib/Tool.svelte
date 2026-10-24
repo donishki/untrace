@@ -57,7 +57,7 @@
   }
 
   async function clean() {
-    if (!file) return;
+    if (!file || stage === "cleaning") return;
     stage = "cleaning";
     result = await cleanImage(file);
     stage = "done";

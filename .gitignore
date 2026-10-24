@@ -6,6 +6,10 @@ yarn-error.log*
 
 # Build output
 dist/
+release/
+test-results/
+playwright-report/
+Untrace-data/
 build/
 
 # Environment variables
@@ -54,3 +58,20 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# Publishing hygiene
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.pfx
+*.p12
+*.keystore
+id_rsa
+id_ed25519
+*.zip
+
+# Vite temporary configuration bundles
+*.timestamp-*.mjs

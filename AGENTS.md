@@ -91,6 +91,37 @@ Light theme: `document.documentElement.setAttribute('data-theme', 'light')`. Dar
 
 ## Untrace specifics
 
+### Batch workflows (1.6.0, 2026-09-10)
+
+`BatchWorkspace.svelte` owns the sequential queue. `processing.js` creates a terminable worker per scan/encode task. `image-worker.js` uses the shared scanner and cleaner with OffscreenCanvas. Keep incomplete scans visibly uncertain. `desktop/preload.cjs` exposes only folder selection and saving; `desktop/output.cjs` validates the sender and creates unique files exclusively in the user-selected directory. Never expose generic IPC or unrestricted filesystem access. Saved export settings use `untrace-export`; theme settings keep their existing key.
+
+
+### Themes and branding (1.3.0, 2026-09-10)
+
+The derivative is named **Untrace Desktop**, as requested by the user. Branding
+lives in `desktop/brand.json`; build metadata in `package.json` must match it.
+Keep upstream Untrace attribution and the MIT license.
+
+The user explicitly requested more themes. `src/themes.css` is the local palette
+source: it overrides existing semantic colour tokens for dark, graphite, paper,
+cobalt and ember without editing vendored `src/tokens.css`. Palette definitions may
+contain raw colours; components must continue using tokens. Exclude both palette
+files (`tokens.css`, `themes.css`) from the raw-colour self-check. No new token names
+are introduced. The theme catalog and shared pre-paint bootstrap are in
+`src/lib/theme-catalog.js`. Appearance is a native dialog with radio controls.
+
+### Desktop workspace (1.2.0, 2026-09-10)
+
+The active application is `src/lib/Workspace.svelte`, mounted by `src/App.svelte`.
+It uses a full-window preview and inspector, not the historical landing page or
+stepper. Older website components remain as upstream reference and are not imported.
+The active stylesheet is `src/app.css`; it composes the existing tokens and keeps
+comfortable density. There is one primary action: choose an image, clean it, or
+save its result. Help is a native dialog. Keep the image processing limitations
+accurate when editing copy. `npm test` verifies the workspace in Electron and
+`npm run portable` creates the Windows release. Earlier specifics below describe
+the upstream baseline.
+
 Applied to this repository on 2026-09-05, design system v2.0.0.
 
 - `src/tokens.css` is the vendored copy. `src/app.css` imports it and adds only

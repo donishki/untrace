@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Untrace — content credentials and metadata remover",
-  "short_name": "Untrace",
-  "description": "Remove C2PA content credentials, AI generation tags and EXIF metadata from images, entirely in your browser.",
+  "name": "Untrace Desktop",
+  "short_name": "Untrace Desktop",
+  "description": "Inspect and clean image metadata in an offline desktop workspace.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -22,7 +22,11 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["productivity", "utilities", "photo"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "photo"
+  ],
   "lang": "en",
   "dir": "ltr",
   "orientation": "any"

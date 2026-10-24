@@ -1,0 +1,254 @@
+/* Local theme palettes override existing semantic tokens. The upstream
+   tokens.css remains untouched. No component-specific colour values. */
+[data-theme='dark'] {
+  --bg: #080808;
+  --surface: #121216;
+  --elevated: #1a1a20;
+  --text-1: #f4f4f6;
+  --text-2: #a9a9b4;
+  --text-3: #83838f;
+  --accent: #8fa8ff;
+  --accent-fg: #080808;
+  --border: #26262e;
+  --border-strong: #3a3a46;
+  --success: #3ecf8e;
+  --warning: #e8b23d;
+  --error: #f26d6d;
+  --info: #62b0f5;
+  color-scheme: dark;
+}
+/* Neutral surfaces keep photographs visually separate from the theme. */
+[data-theme='graphite'] {
+  --bg: #18191b;
+  --surface: #232528;
+  --elevated: #303338;
+  --text-1: #f4f4f2;
+  --text-2: #c8c9cb;
+  --text-3: #a5a8ac;
+  --accent: #ecece9;
+  --accent-fg: #18191b;
+  --border: #3b3e43;
+  --border-strong: #656a72;
+  --success: #8bd4b0;
+  --warning: #e9c58c;
+  --error: #f49e9e;
+  --info: #acc7ec;
+  color-scheme: dark;
+}
+[data-theme='paper'] {
+  --bg: #e9e6df;
+  --surface: #faf9f6;
+  --elevated: #ffffff;
+  --text-1: #242521;
+  --text-2: #4d5048;
+  --text-3: #62655c;
+  --accent: #343c32;
+  --accent-fg: #faf9f6;
+  --border: #d0d0c7;
+  --border-strong: #959b8b;
+  --success: #326446;
+  --warning: #805b12;
+  --error: #a23a37;
+  --info: #3f5c85;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  color-scheme: light;
+}
+[data-theme='cobalt'] {
+  --bg: #e3e8f0;
+  --surface: #f9fbff;
+  --elevated: #ffffff;
+  --text-1: #162132;
+  --text-2: #3e4e63;
+  --text-3: #566579;
+  --accent: #244ddb;
+  --accent-fg: #ffffff;
+  --border: #c9d2e0;
+  --border-strong: #8698b2;
+  --success: #226948;
+  --warning: #805909;
+  --error: #b03742;
+  --info: #285abc;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  color-scheme: light;
+}
+/* Cobalt has a dark frame and a light working area. The same roles are
+   overridden locally, so controls keep their shared component styles. */
+html[data-theme='cobalt'] :is(.app-header, .app-rail),
+.theme-mini[data-theme='cobalt'] > :is(.mini-header, .mini-rail) {
+  --bg: #273a5d;
+  --surface: #15243e;
+  --elevated: #304564;
+  --text-1: #f2f5fb;
+  --text-2: #c6d1e5;
+  --text-3: #a2b4ce;
+  --border: #344564;
+  --border-strong: #61799d;
+  --accent: #9ab5ff;
+  --accent-fg: #15243e;
+  color-scheme: dark;
+}
+[data-theme='ember'] {
+  --bg: #101010;
+  --surface: #1d1d1d;
+  --elevated: #2c2c2c;
+  --text-1: #f5f3ef;
+  --text-2: #cdc9c3;
+  --text-3: #a7a39d;
+  --accent: #ffa168;
+  --accent-fg: #21150d;
+  --border: #363432;
+  --border-strong: #71685e;
+  --success: #9ed0a2;
+  --warning: #ebce87;
+  --error: #ffa1a1;
+  --info: #a4c5ed;
+  color-scheme: dark;
+}
+
+/* Editor-inspired adaptations; sources and design notes: THEME-CREDITS.md. */
+[data-theme='one-dark'] {
+  --bg: #21252b;
+  --surface: #282c34;
+  --elevated: #343a45;
+  --text-1: #abb2bf;
+  --text-2: #abb2bf;
+  --text-3: #a4acba;
+  --accent: #61afef;
+  --accent-fg: #18212b;
+  --border: #3e4451;
+  --border-strong: #687386;
+  --success: #98c379;
+  --warning: #e5c07b;
+  --error: #e06c75;
+  --info: #61afef;
+  color-scheme: dark;
+}
+[data-theme='dracula'] {
+  --bg: #21222c;
+  --surface: #282a36;
+  --elevated: #343746;
+  --text-1: #f8f8f2;
+  --text-2: #d6d6e5;
+  --text-3: #aaaec9;
+  --accent: #bd93f9;
+  --accent-fg: #282a36;
+  --border: #44475a;
+  --border-strong: #727997;
+  --success: #50fa7b;
+  --warning: #f1fa8c;
+  --error: #ff5555;
+  --info: #8be9fd;
+  color-scheme: dark;
+}
+[data-theme='tokyo-night'] {
+  --bg: #16161e;
+  --surface: #1a1b26;
+  --elevated: #24283b;
+  --text-1: #c0caf5;
+  --text-2: #a9b1d6;
+  --text-3: #939dc2;
+  --accent: #7aa2f7;
+  --accent-fg: #16161e;
+  --border: #343b58;
+  --border-strong: #636f98;
+  --success: #9ece6a;
+  --warning: #e0af68;
+  --error: #f7768e;
+  --info: #7dcfff;
+  color-scheme: dark;
+}
+[data-theme='night-owl'] {
+  --bg: #011627;
+  --surface: #071e30;
+  --elevated: #112b40;
+  --text-1: #d6deeb;
+  --text-2: #b6c8d9;
+  --text-3: #8fa8be;
+  --accent: #7fdbca;
+  --accent-fg: #011627;
+  --border: #234157;
+  --border-strong: #53748d;
+  --success: #addb67;
+  --warning: #ecc48d;
+  --error: #ef8080;
+  --info: #82aaff;
+  color-scheme: dark;
+}
+[data-theme='github-dark'] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --elevated: #21262d;
+  --text-1: #e6edf3;
+  --text-2: #b1bac4;
+  --text-3: #919ba6;
+  --accent: #3fb950;
+  --accent-fg: #0d1117;
+  --border: #30363d;
+  --border-strong: #687584;
+  --success: #56d364;
+  --warning: #e3b341;
+  --error: #ff7b72;
+  --info: #79c0ff;
+  color-scheme: dark;
+}
+[data-theme='github-light'] {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --text-1: #1f2328;
+  --text-2: #424a53;
+  --text-3: #59636e;
+  --accent: #1a7f37;
+  --accent-fg: #ffffff;
+  --border: #d0d7de;
+  --border-strong: #8c959f;
+  --success: #1a7f37;
+  --warning: #7d4e00;
+  --error: #cf222e;
+  --info: #0969da;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  color-scheme: light;
+}
+[data-theme='catppuccin-mocha'] {
+  --bg: #181825;
+  --surface: #1e1e2e;
+  --elevated: #313244;
+  --text-1: #cdd6f4;
+  --text-2: #bac2de;
+  --text-3: #a6adc8;
+  --accent: #cba6f7;
+  --accent-fg: #1e1e2e;
+  --border: #45475a;
+  --border-strong: #6c7086;
+  --success: #a6e3a1;
+  --warning: #f9e2af;
+  --error: #f38ba8;
+  --info: #89b4fa;
+  color-scheme: dark;
+}
+[data-theme='catppuccin-latte'] {
+  --bg: #e6e9ef;
+  --surface: #eff1f5;
+  --elevated: #ffffff;
+  --text-1: #4c4f69;
+  --text-2: #5c5f77;
+  --text-3: #62657a;
+  --accent: #8839ef;
+  --accent-fg: #ffffff;
+  --border: #bcc0cc;
+  --border-strong: #8c8fa1;
+  --success: #33751b;
+  --warning: #865900;
+  --error: #d20f39;
+  --info: #1e66f5;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  color-scheme: light;
+}

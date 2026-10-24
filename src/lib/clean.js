@@ -19,6 +19,7 @@ const SECOND_PASS_QUALITY = 0.95;
 const PNG_PIXEL_LIMIT = 1000000;
 
 function loadImage(source) {
+  if (typeof document === 'undefined') return createImageBitmap(source).then(img => ({ img }));
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(source);
     const img = new Image();
@@ -33,11 +34,12 @@ function loadImage(source) {
 
 function redraw(img, { type, quality, fillWhite = false }) {
   return new Promise((resolve, reject) => {
-    const canvas = document.createElement("canvas");
+    const canvas = typeof document === 'undefined' ? new OffscreenCanvas(img.width, img.height) : document.createElement("canvas");
     canvas.width = img.width;
     canvas.height = img.height;
 
     const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas is unavailable.");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // A white base stops transparent areas turning black when the second pass
@@ -50,6 +52,10 @@ function redraw(img, { type, quality, fillWhite = false }) {
     ctx.globalCompositeOperation = "source-over";
     ctx.drawImage(img, 0, 0);
 
+    if (canvas.convertToBlob) {
+      canvas.convertToBlob({ type, quality }).then(resolve, reject);
+      return;
+    }
     canvas.toBlob(
       (blob) =>
         blob
@@ -71,7 +77,12 @@ async function stillHasMetadata(blob) {
       gps: true,
       xmp: true,
       iptc: true,
-      icc: true,
+      // Chromium can generate a standard sRGB profile during encoding.
+      // It is reported in comparison, but another lossy pass cannot remove it.
+      icc: false,
+      // Required image headers describe the pixels, not removable metadata.
+      ihdr: false,
+      jfif: false,
       silentErrors: true,
     });
     return Boolean(remaining && Object.keys(remaining).length > 0);
@@ -83,8 +94,8 @@ async function stillHasMetadata(blob) {
 }
 
 function outputName(originalName, blobType) {
-  const extension = originalName.split(".").pop();
-  const base = originalName.replace(new RegExp(`\\.${extension}$`, "i"), "");
+  const extension = originalName.includes(".") ? originalName.split(".").pop() : "";
+  const base = originalName.replace(/\.[^.]+$/, "").replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').slice(0, 180) || 'image';
 
   let finalExtension = extension;
   if (blobType === "image/jpeg") finalExtension = "jpg";
@@ -99,19 +110,22 @@ function outputName(originalName, blobType) {
  *   `fallback: true` means the image could not be re-encoded and the original
  *   bytes are being returned untouched. The caller must not claim success.
  */
-export async function cleanImage(file) {
+export async function cleanImage(file, { format = 'auto', quality = JPEG_QUALITY } = {}) {
   let objectUrl;
+  let bitmap;
 
   try {
     const { img, url } = await loadImage(file);
     objectUrl = url;
+    bitmap = img;
 
-    const keepPng =
-      file.type === "image/png" && img.width * img.height < PNG_PIXEL_LIMIT;
+    const keepPng = format === 'image/png' || (format === 'auto' &&
+      (file.type === "image/png" || /\.png$/i.test(file.name)) && img.width * img.height < PNG_PIXEL_LIMIT);
 
     let blob = await redraw(img, {
       type: keepPng ? "image/png" : "image/jpeg",
-      quality: keepPng ? undefined : JPEG_QUALITY,
+      quality: keepPng ? undefined : Math.min(1, Math.max(0.1, quality)),
+      fillWhite: !keepPng,
     });
     let wasSecondPass = false;
 
@@ -125,7 +139,8 @@ export async function cleanImage(file) {
         });
         wasSecondPass = true;
       } finally {
-        URL.revokeObjectURL(second.url);
+        if (second.url) URL.revokeObjectURL(second.url);
+        second.img.close?.();
       }
     }
 
@@ -135,13 +150,15 @@ export async function cleanImage(file) {
     return result(file, file, { wasSecondPass: false, fallback: true });
   } finally {
     if (objectUrl) URL.revokeObjectURL(objectUrl);
+    bitmap?.close?.();
   }
 }
 
 function result(blob, originalFile, { wasSecondPass, fallback }) {
   return {
+    blob,
     url: URL.createObjectURL(blob),
-    filename: outputName(originalFile.name, blob.type),
+    filename: fallback ? originalFile.name : outputName(originalFile.name, blob.type),
     size: blob.size,
     originalSize: originalFile.size,
     sizeDelta: originalFile.size

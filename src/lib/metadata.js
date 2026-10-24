@@ -18,7 +18,7 @@ export const ACCEPTED_TYPES = [
 export const ACCEPTED_EXTENSIONS = ".jpg,.jpeg,.png,.tiff,.tif,.heic,.avif";
 
 /** Sections that describe the result rather than holding metadata values. */
-const META_KEYS = ["fileType", "hasMetadata", "message"];
+const META_KEYS = ["fileType", "hasMetadata", "message", "scanError"];
 
 const GPS_FIELDS = [
   "latitude",
@@ -159,7 +159,8 @@ const AI_VALUE_KEYWORDS = [
 ];
 
 export function isAccepted(file) {
-  return Boolean(file) && ACCEPTED_TYPES.includes(file.type);
+  return Boolean(file) && (ACCEPTED_TYPES.includes(file.type) ||
+    ((!file.type || file.type === "application/octet-stream") && /\.(jpe?g|png|tiff?|heic|avif)$/i.test(file.name)));
 }
 
 function pick(source, fields) {
@@ -178,7 +179,8 @@ export async function extractMetadata(file) {
   try {
     const { parse } = await import("exifr");
 
-    const exifData = await parse(file, {
+    let exifData, scanError;
+    try { exifData = await parse(file, {
       tiff: true,
       exif: true,
       gps: true,
@@ -190,6 +192,9 @@ export async function extractMetadata(file) {
       iptc: true,
       icc: true,
       ihdr: true,
+      text: true,
+      itxt: true,
+      ztxt: true,
       jfif: true,
       chunked: true,
       firstChunkSize: 131072,
@@ -223,49 +228,22 @@ export async function extractMetadata(file) {
       skip: [],
     });
 
-    const buffer = await file.arrayBuffer();
+    } catch { scanError = 'Some metadata could not be parsed. Results may be incomplete.'; }
+    const buffer = await file.slice(0, 1024 * 1024).arrayBuffer();
     const rawMetadata = await extractRawMetadata(
       new Uint8Array(buffer),
       file.type
     );
 
-    let allMetadata = { ...(exifData || {}), ...rawMetadata };
-
-    if (file.type.includes("png") && Object.keys(allMetadata).length === 0) {
-      try {
-        const pngMetadata = await parse(file, {
-          ihdr: true,
-          itxt: true,
-          text: true,
-          ztxt: true,
-          time: true,
-          phys: true,
-          splt: true,
-          hist: true,
-          chrm: true,
-          gama: true,
-          iccp: true,
-          sbit: true,
-          srgb: true,
-          bkgd: true,
-          trns: true,
-          mergeOutput: false,
-          translateKeys: false,
-          sanitize: false,
-        });
-        if (pngMetadata && Object.keys(pngMetadata).length > 0) {
-          allMetadata = { ...allMetadata, ...pngMetadata };
-        }
-      } catch {
-        /* PNG-specific parsing is best effort */
-      }
-    }
+    const allMetadata = { ...(exifData || {}), ...rawMetadata };
 
     if (Object.keys(allMetadata).length === 0) {
-      return cleanResult(file);
+      return cleanResult(file, scanError);
     }
 
-    return categorise(allMetadata, rawMetadata);
+    const result = categorise(allMetadata, rawMetadata);
+    if (scanError) result.scanError = scanError;
+    return result;
   } catch (error) {
     return cleanResult(file, error);
   }
@@ -274,23 +252,12 @@ export async function extractMetadata(file) {
 function cleanResult(file, error) {
   const isPng = file.type.includes("png");
   const isJpeg = file.type.includes("jpeg") || file.type.includes("jpg");
-  let message;
-
-  if (isPng) {
-    message = "PNG files rarely carry EXIF metadata.";
-  } else if (
-    error &&
-    (error.message?.includes("not supported") ||
-      error.message?.includes("invalid"))
-  ) {
-    message = "No EXIF data found in this image.";
-  } else {
-    message = "No metadata found. This image is already clean.";
-  }
+  const message = error ? 'Metadata could not be fully read. Results may be incomplete.' : 'No recognized metadata found. This is not proof that none exists.';
 
   return {
     fileType: isPng ? "png" : isJpeg ? "jpeg" : "other",
     hasMetadata: false,
+    ...(error ? { scanError: message } : {}),
     message,
   };
 }
@@ -300,6 +267,7 @@ function categorise(allMetadata, rawMetadata) {
   const keys = Object.keys(allMetadata);
 
   const c2paFields = keys.filter((key) =>
+    !(key in rawMetadata) && !key.toLowerCase().includes('profile') &&
     C2PA_KEY_HINTS.some((hint) => key.toLowerCase().includes(hint))
   );
   assign(metadata, "C2PA/AI Provenance", pick(allMetadata, c2paFields));
@@ -396,6 +364,10 @@ function categorise(allMetadata, rawMetadata) {
       "File contains binary metadata": true,
     };
   }
+
+  const assigned = new Set(Object.values(metadata).flatMap(values => Object.keys(values)));
+  const remaining = keys.filter(key => !assigned.has(key) && !(key in rawMetadata));
+  if (remaining.length) metadata.Other = { ...(metadata.Other || {}), ...pick(allMetadata, remaining) };
 
   return metadata;
 }
