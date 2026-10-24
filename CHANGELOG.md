@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0 - 2026-10-25
+
+- Added per-user Windows installers and portable launchers for x64 and x86.
+- Store installed-app preferences in the user's application-data directory; preserve portable settings beside the launcher.
+- Use Electron 43.8.3 for x86 because Electron 44 no longer ships 32-bit binaries; keep Electron 44.3.0 for x64.
+- Added reproducible full-workspace screenshots with generated sample artwork.
+- Reviewed upstream through 6d5e92b; no outstanding image-engine fixes require importing the web interface.
+- Set main as the default branch on both hosting services.
+
+
 ## 1.6.1 - 2026-09-10
 
 - Filter folder selections, multiple-file selections and drag-and-drop before opening a batch: only supported images enter the queue. Non-image files no longer appear as skipped rows.

@@ -1,7 +1,7 @@
 {
   "name": "untrace-desktop",
   "description": "Offline image metadata cleaner for Windows with a dedicated desktop workspace.",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +10,11 @@
     "deploy": "npm run build && gh-pages -d dist",
     "build:desktop": "npm run build && node scripts/prepare-desktop.mjs",
     "desktop": "npm run build:desktop && electron .",
-    "portable": "npm run build:desktop && electron-builder --win portable --x64",
-    "test": "npm run build:desktop && playwright test"
+    "portable": "npm run build:desktop && node scripts/build-windows.mjs portable",
+    "test": "npm run build:desktop && playwright test",
+    "installer": "npm run build:desktop && node scripts/build-windows.mjs nsis",
+    "release:windows": "npm run build:desktop && node scripts/build-windows.mjs",
+    "screenshots": "npm run build:desktop && node scripts/screenshots.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -50,7 +53,7 @@
       "icon": "desktop/icon.ico"
     },
     "portable": {
-      "artifactName": "Untrace-Desktop-${version}-portable-x64.exe"
+      "artifactName": "Untrace-Desktop-${version}-portable-${arch}.exe"
     },
     "extraFiles": [
       {
@@ -69,7 +72,20 @@
         "from": "THEME-CREDITS.md",
         "to": "THEME-CREDITS.md"
       }
-    ]
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Untrace-Desktop-${version}-setup-${arch}.exe",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "license": "LICENSE"
+    },
+    "compression": "normal"
   },
   "repository": {
     "type": "git",

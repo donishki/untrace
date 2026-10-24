@@ -7,8 +7,8 @@
 An offline image metadata cleaner for Windows, with batch processing and fourteen themes.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Windows x64](https://img.shields.io/badge/Windows-x64-0078D4)](#run)
-[![Version](https://img.shields.io/badge/Version-1.6.1-466853)](CHANGELOG.md)
+[![Windows x64 / x86](https://img.shields.io/badge/Windows-x64%20%7C%20x86-0078D4)](#run)
+[![Version](https://img.shields.io/badge/Version-1.7.0-466853)](CHANGELOG.md)
 
 [Download — GitHub](https://github.com/donishki/Untrace/releases/latest) · [Download — Gitea](https://git.ptbox.org/dasp/Untrace/releases/latest) · [Build and verify](#build-and-verify) · [Changelog](CHANGELOG.md) · [Publishing guide](PUBLISHING.md)
 
@@ -18,18 +18,36 @@ An offline desktop edition of [developersharif/untrace](https://github.com/devel
 
 ## Screenshots
 
-Metadata comparison using a generated test image (captured in version 1.6.1).
+Real screenshots of version 1.7.0 using generated landscape artwork, without personal photos or paths.
 
-![Original and cleaned image metadata comparison](docs/screenshots/metadata-comparison.png)
+### A focused workspace
+
+![Dark workspace with a landscape preview and cleaned image export](docs/screenshots/workspace-dark.png)
+
+### Light appearance
+
+![Light workspace showing the image preview and metadata inspector](docs/screenshots/workspace-light.png)
+
+### Batch processing
+
+![Batch queue with four prepared images and export controls](docs/screenshots/batch-light.png)
 
 ## Run
 
-1. Put `Untrace-Desktop-1.6.1-portable-x64.exe` in a writable folder or USB drive and double-click it.
-2. Choose **Open image**, drop a file anywhere in the workspace, or paste an image.
-3. Review the **Inspector**, choose an export format, and select **Clean image**.
-4. Compare **Original** and **Cleaned copy**, then choose **Save clean image**.
+Download from [GitHub Releases](https://github.com/donishki/Untrace/releases/latest) or [Gitea Releases](https://git.ptbox.org/dasp/Untrace/releases/latest).
 
-Requires 64-bit Windows 10 or 11. No installation, administrator rights, Node.js, browser installation or internet is required. The EXE is unsigned; Windows may show an unknown-publisher or SmartScreen prompt. Initial launch extracts the bundled runtime to a temporary folder.
+| Package | Use |
+| --- | --- |
+| `Untrace-Desktop-1.7.0-setup-x64.exe` | Install on 64-bit Windows. Recommended for most PCs. |
+| `Untrace-Desktop-1.7.0-setup-x86.exe` | Install on 32-bit Windows. Also runs on 64-bit Windows. |
+| `Untrace-Desktop-1.7.0-portable-x64.exe` | Run the 64-bit app from a writable folder or USB drive. |
+| `Untrace-Desktop-1.7.0-portable-x86.exe` | Run the 32-bit portable app. |
+
+Installers work for your Windows account, offer an installation folder and shortcuts, and can be removed through Windows Settings > Apps. No administrator rights are required. Settings survive upgrades and uninstall. Install one architecture at a time; x64 and x86 installed editions share preferences.
+
+Requires Windows 10 or 11 for x64, or Windows 10 for x86. The x86 edition uses Electron 43.8.3, the last Electron series supporting 32-bit Windows; its support ends in January 2027. The x64 edition uses Electron 44.3.0. No Node.js, browser installation, or internet is required to run either edition. Executables are unsigned; Windows may show an unknown-publisher or SmartScreen prompt. Portable launchers extract the runtime to a temporary folder.
+
+Open or drop an image, review the Inspector, choose an export format, select **Clean image**, and save the separate copy. You can also select several images or a folder for a batch.
 
 The window has an image workspace, a scrolling metadata inspector, export settings, before/after viewing, fit/100% zoom, fourteen themes and Help. The bottom status bar shows progress. There are no promotional sections or external pages required to use the app.
 
@@ -84,7 +102,7 @@ Untrace Desktop is a derivative of developersharif's Untrace, not an official up
 
 ## Portable data and privacy
 
-Preferences and Chromium session files live in `Untrace-data` beside the executable. Keep it with the EXE to retain preferences. Close Untrace Desktop before deleting that folder to reset it. The runtime also uses the Windows temporary folder, so portable does not mean forensic trace-free.
+Portable preferences and Chromium session files live in `Untrace-data` beside the launcher. Installed and source-run editions use `%APPDATA%\Untrace Desktop`, separate from portable settings. Keep it with the EXE to retain preferences. Close Untrace Desktop before deleting that folder to reset it. The runtime also uses the Windows temporary folder, so portable does not mean forensic trace-free.
 
 Images are processed locally and originals are not automatically overwritten. The application blocks HTTP/WebSocket requests, denies permission requests, and has no telemetry or updater. The source link in Help opens your default browser when clicked. The renderer is sandboxed, with Node integration disabled and a restrictive content security policy. A narrow preload bridge opens the native output-folder chooser and saves encoded bytes only inside that selected destination, using exclusive file creation. Image scanning and encoding run in terminable background workers.
 
@@ -98,21 +116,22 @@ References: [Electron overview](https://www.electronjs.org/docs/latest/), [Elect
 
 ## Build and verify
 
-Use Node.js 22.13 or newer and npm on Windows x64. Dependency downloads require internet access.
+Use Node.js 22.13 or newer and npm on Windows x64 / x86. Dependency downloads require internet access.
 
 ```powershell
 npm ci
 npm test
-npm run portable
-node scripts/smoke-portable.mjs
+npm run release:windows
+node scripts/smoke-portable.mjs x64
+node scripts/smoke-portable.mjs x86
 ```
 
-The EXE is written to `release/`. `release/win-unpacked/Untrace Desktop.exe` is the alternative folder-based build; keep all its files together. `npm run desktop` launches from source, and `npm run dev` runs the same workspace in a development browser. Desktop packaging removes remote font imports from generated assets without modifying vendored tokens; system fonts are used offline.
+Installers and portable EXEs are written to `release/x64/` and `release/x86/`. The unpacked apps are in `release/x64/win-unpacked/` and `release/x86/win-ia32-unpacked/`; keep all their files together. `npm run portable` builds both portable launchers; `npm run installer` builds both installers. `npm run desktop` launches from source, and `npm run dev` runs the same workspace in a development browser. Desktop packaging removes remote font imports from generated assets without modifying vendored tokens; system fonts are used offline.
 
 To run the full suite against the packaged application:
 
 ```powershell
-$env:UNTRACE_TEST_EXE = (Resolve-Path 'release/win-unpacked/Untrace Desktop.exe').Path
+$env:UNTRACE_TEST_EXE = (Resolve-Path 'release/x64/win-unpacked/Untrace Desktop.exe').Path
 npx playwright test
 Remove-Item Env:UNTRACE_TEST_EXE
 ```

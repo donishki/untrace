@@ -158,3 +158,9 @@ NEW TOKEN  breakpoints — 560px / 768px / 900px
 `src/lib/clean.js` contains one literal hex, `JPEG_MATTE = "#FFFFFF"`. That is
 image data written to a canvas, not interface styling, so it is intentionally
 not a token.
+
+### Windows distribution (1.7.0, 2026-10-25)
+
+`npm run release:windows` builds separate x64/x86 installer and portable packages. `scripts/build-windows.mjs` pins Electron 44.3.0 for x64 and 43.8.3 for x86 because 44 removed ia32 binaries. Electron 43 support ends in January 2027; do not silently remove that support limitation from the docs. Installed settings use `%APPDATA%\Untrace Desktop`; portable launcher settings remain in the existing adjacent `Untrace-data` folder. `desktop/data-path.cjs` centralizes this distinction. Preserve settings on uninstall. Run installer checks sequentially and separately from app tests, because the installer closes other processes with the application executable name.
+
+Both remotes default to `main`. See `docs/UPSTREAM-REVIEW.md` before importing upstream website changes. Regenerate real-workspace screenshots with `npm run screenshots` using only the generated sample artwork.

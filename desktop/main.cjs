@@ -6,9 +6,8 @@ const { name: productName, appId } = require('./brand.json');
 app.setName(productName);
 app.setAppUserModelId(appId);
 
-// Keep preferences alongside the portable executable, including on USB drives.
-const home = process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(app.getPath('exe'));
-const data = process.env.UNTRACE_DATA_DIR || path.join(home, 'Untrace-data');
+// Portable settings travel with the launcher. Installed settings survive upgrades/uninstall.
+const data = require('./data-path.cjs').dataPath({ env: process.env, appData: app.getPath('appData') });
 try {
   fs.mkdirSync(data, { recursive: true });
   app.setPath('userData', data);
